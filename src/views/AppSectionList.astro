@@ -1,17 +1,15 @@
 ---
-import type { App, AppSection, AppTool } from '@model/app';
+import type { AppSection } from '@model/app';
 import { platforms } from '@model/platforms';
 
 import FeatureCarousel from './components/FeatureCarousel.astro';
 import FeatureFrames from './components/FeatureFrames.astro';
 
 interface Props {
-    app: App,
-    tools: AppTool[],
     sections: AppSection[]
 }
 
-const { app, tools, sections } = Astro.props
+const { sections } = Astro.props
 ---
 
 <main id="section-list" class="w-full flex flex-col gap-6 my-8">
@@ -42,7 +40,7 @@ const { app, tools, sections } = Astro.props
     import Swiper from "swiper";
 
     (async() => {
-        const swiper = new Swiper(".swiper", { 
+        new Swiper(".swiper", { 
             grabCursor: true,
             centeredSlides: true,
             slidesPerView: "auto",

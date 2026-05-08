@@ -6,8 +6,8 @@ import { collection, getDocs, type DocumentData, type QueryDocumentSnapshot } fr
 
 const convertFirestoreToApp = (document: QueryDocumentSnapshot<DocumentData, DocumentData>): App => {
     const id = document.id;
-    const { page, name, description, apple_link, web_link, github_link, image, tools } = document.data();
-    return { id, page, name, description, apple_link, web_link, github_link, image, tools }
+    const { page, name, description, apple_link, web_link, github_link, image, image_path, tools } = document.data();
+    return { id, page, name, description, apple_link, web_link, github_link, image, image_path, tools }
 }
 
 export const fetchApps = async(): Promise<App[]> => {

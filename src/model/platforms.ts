@@ -36,10 +36,10 @@ export const architecture_platform: Platform = {
 }
 
 export const platforms: Platform[] = [
-    web_platform,
+    architecture_platform,
     mobile_platform,
     watch_platform,
     widget_platform,
     desktop_platform,
-    architecture_platform
+    web_platform
 ];

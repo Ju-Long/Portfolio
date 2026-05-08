@@ -19,7 +19,7 @@ const sections = await fetchSections(app.id);
         <Header app={app} tools={tools} sections={sections}/>
 
         <div class="relative pb-[120px] md:pb-0 w-full h-full flex flex-col items-center">
-            <AppSectionList app={app} tools={tools} sections={sections}/>
+            <AppSectionList sections={sections}/>
         </div>
     </div>
 </Layout>
