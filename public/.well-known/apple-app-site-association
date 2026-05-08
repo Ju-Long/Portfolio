@@ -1,0 +1,29 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": [ "5678544286.com.BaBaSaMa.TravelSG", "5678544286.com.BaBaSaMa.Merlion-News" ],
+             "components": [
+               {
+                  "#": "no_universal_links",
+                  "exclude": true,
+                  "comment": "Matches any URL with a fragment that equals no_universal_links and instructs the system not to open it as a universal link."
+               },
+               {
+                  "/": "/travelsg",
+                  "?": { "code": "?????", "service_no": "?*" },
+                  "comment": "Matches any URL with a path that starts with /travelsg and if code query is 5 characters and if service no is one or more characters."
+               },
+               {
+                  "/": "/merlion-news",
+                  "?": { "id": "?*" },
+                  "comment": "Matches any URL with a path that starts with /merlion-news and if id query is one or more characters."
+               }
+             ]
+           }
+       ]
+   },
+   "webcredentials": {
+      "apps": [ "5678544286.com.BaBaSaMa.TravelSG", "5678544286.com.BaBaSaMa.Merlion-News" ]
+   }
+}

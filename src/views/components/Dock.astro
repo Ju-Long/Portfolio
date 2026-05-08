@@ -1,0 +1,188 @@
+---
+---
+
+<div class="relative w-full flex flex-row items-end justify-center rounded-lg px-4 py-2 gap-4">
+    <div id="dock-icons" class="contents"></div>
+    <div class="bg-white opacity-50 absolute bottom-0 z-50 w-[90%] md:w-[65%] h-[60px] rounded-lg"></div>
+</div>
+
+<dialog id="launch-pad" class="bg-transparent text-white w-screen h-screen max-w-none max-h-none p-0 m-0 backdrop:bg-black/60 backdrop:backdrop-blur-2xl">
+    <div id="launch-pad-overlay" class="w-full h-full flex items-center justify-center p-8">
+        <div id="launch-pad-grid" class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6"></div>
+    </div>
+</dialog>
+
+<script>
+    import type { App } from "@model/app";
+    import { selected_app, apps, app_memory } from "@/states";
+    import { fetchApps } from "@firebase/client.sync";
+
+    const dock_icons = document.getElementById('dock-icons') as HTMLDivElement;
+    const launch_pad = document.getElementById('launch-pad') as HTMLDialogElement;
+    const launch_pad_grid = document.getElementById('launch-pad-grid') as HTMLDivElement;
+
+    const order_apps = (all_apps: App[], memory: string[]): App[] => {
+        const by_id = new Map(all_apps.map((app) => [app.id, app]));
+        const seen = new Set<string>();
+        const ordered: App[] = [];
+        memory.forEach((id) => {
+            const app = by_id.get(id);
+            if (app && !seen.has(id)) {
+                ordered.push(app);
+                seen.add(id);
+            }
+        });
+        all_apps.forEach((app) => {
+            if (!seen.has(app.id)) {
+                ordered.push(app);
+                seen.add(app.id);
+            }
+        });
+        return ordered;
+    };
+
+    const create_dock_icon = (app: App): HTMLElement => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative z-20 hover:z-50';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.appId = app.id;
+        button.dataset.appPage = app.page;
+        button.className = 'group flex flex-col items-center justify-center cursor-pointer bg-white rounded-lg';
+
+        const img = document.createElement('img');
+        img.src = app.image;
+        img.alt = app.name;
+        img.width = 50;
+        img.height = 50;
+        img.className = 'w-[50px] h-[50px] aspect-square object-contain rounded-lg border border-white group-hover:w-[100px] group-hover:h-[100px] group-data-[selected=true]:w-[80px] group-data-[selected=true]:h-[80px] md:group-data-[selected=true]:w-[100px] md:group-data-[selected=true]:h-[100px] duration-300 ease-in-out';
+
+        const label = document.createElement('strong');
+        label.textContent = app.name;
+        label.className = 'absolute top-[-30px] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-data-[selected=true]:opacity-100 duration-300 ease-in-out text-nowrap group-hover:bg-black/80 px-3 py-1 rounded-lg text-sm';
+
+        button.appendChild(img);
+        button.appendChild(label);
+        wrapper.appendChild(button);
+        return wrapper;
+    };
+
+    const create_launch_pad_icon = (): HTMLElement => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative z-20 hover:z-50';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = 'open-launch-pad';
+        button.className = 'group flex flex-col items-center justify-center cursor-pointer';
+
+        const tile = document.createElement('div');
+        tile.className = 'w-[50px] h-[50px] aspect-square rounded-lg border border-white grid grid-cols-3 grid-rows-3 gap-[2px] p-1 bg-white/20 backdrop-blur-sm group-hover:w-[100px] group-hover:h-[100px] duration-300 ease-in-out';
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'bg-white/80 rounded-sm';
+            tile.appendChild(cell);
+        }
+
+        const label = document.createElement('strong');
+        label.textContent = 'Applications';
+        label.className = 'absolute top-[-30px] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 duration-300 ease-in-out text-nowrap group-hover:bg-black/80 px-3 py-1 rounded-lg text-sm';
+
+        button.appendChild(tile);
+        button.appendChild(label);
+        wrapper.appendChild(button);
+        return wrapper;
+    };
+
+    const create_launch_pad_card = (app: App): HTMLElement => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.appId = app.id;
+        button.dataset.appPage = app.page;
+        button.className = 'flex flex-col items-center justify-center gap-2 p-2 rounded-lg hover:bg-white/10 hover:scale-110 duration-200 ease-in-out cursor-pointer';
+
+        const img = document.createElement('img');
+        img.src = app.image;
+        img.alt = app.name;
+        img.className = 'w-[80px] h-[80px] md:w-[100px] md:h-[100px] aspect-square object-contain rounded-2xl bg-white border border-white';
+
+        const span = document.createElement('span');
+        span.textContent = app.name;
+        span.className = 'text-white text-sm font-noto-sans text-center';
+
+        button.appendChild(img);
+        button.appendChild(span);
+        return button;
+    };
+
+    const current_page = (): string => {
+        const path = window.location.pathname;
+        return path === '/' ? '' : path.replace(/^\//, '').split('/')[0];
+    };
+
+    const apply_selected_state = () => {
+        const page = current_page();
+        dock_icons.querySelectorAll<HTMLButtonElement>('button[data-app-page]').forEach((btn) => {
+            btn.dataset.selected = btn.dataset.appPage === page ? 'true' : 'false';
+        });
+    };
+
+    const render = () => {
+        const all_apps = apps.get();
+        const memory = app_memory.get();
+        const ordered = order_apps(all_apps, memory);
+
+        dock_icons.replaceChildren();
+        ordered.slice(0, 4).forEach((app) => dock_icons.appendChild(create_dock_icon(app)));
+        if (ordered.length > 4) {
+            dock_icons.appendChild(create_launch_pad_icon());
+        }
+
+        launch_pad_grid.replaceChildren();
+        ordered.forEach((app) => launch_pad_grid.appendChild(create_launch_pad_card(app)));
+
+        apply_selected_state();
+    };
+
+    const open_app = (id: string, page: string) => {
+        const memory = app_memory.get();
+        app_memory.set([id, ...memory.filter((m) => m !== id)]);
+        selected_app.set(page);
+    };
+
+    dock_icons.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement).closest('button') as HTMLButtonElement | null;
+        if (!button) return;
+        if (button.id === 'open-launch-pad') {
+            launch_pad.showModal();
+            return;
+        }
+        const id = button.dataset.appId;
+        const page = button.dataset.appPage;
+        if (id && page) open_app(id, page);
+    });
+
+    launch_pad.addEventListener('click', (event) => {
+        const card = (event.target as HTMLElement).closest('button[data-app-id]') as HTMLButtonElement | null;
+        if (card) {
+            const id = card.dataset.appId;
+            const page = card.dataset.appPage;
+            if (id && page) {
+                open_app(id, page);
+                launch_pad.close();
+            }
+            return;
+        }
+        launch_pad.close();
+    });
+
+    apps.listen(render);
+    app_memory.listen(render);
+    document.addEventListener('astro:page-load', apply_selected_state);
+
+    (async () => {
+        const fetched = await fetchApps();
+        apps.set(fetched);
+    })();
+</script>

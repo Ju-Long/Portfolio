@@ -1,0 +1,24 @@
+---
+import type { Feature } from "@model/app";
+
+interface Props {
+    features: Feature[]
+}
+
+const { features } = Astro.props
+---
+<div class="swiper max-w-dvw">
+    <div class="swiper-wrapper max-w-dvw">
+        {
+            features.map((feature) => (
+                <div class="swiper-slide w-dvw md:max-w-[50dvw]">
+                    <img 
+                        src={feature.image} 
+                        alt="" 
+                        class="w-dvw md:w-[50dvw] aspect-auto rounded-md"
+                        />
+                </div>
+            ))
+        }
+    </div>
+</div>

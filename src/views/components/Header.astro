@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets'
+
+import type { App, AppSection, AppTool } from '@model/app';
+import { platforms } from '@model/platforms';
+
+import AppleButton from './AppleButton.astro';
+import LinkButton from './LinkButton.astro';
+
+interface Props {
+    app: App,
+    tools: AppTool[],
+    sections: AppSection[]
+}
+
+const { app, tools, sections } = Astro.props
+---
+<div id="app-header" class="w-full h-full flex flex-row items-center justify-center gap-4 bg-black py-8">
+    <div class="flex flex-col items-center justify-center gap-4 md:gap-8">
+        <Image src={app.image} alt={app.name} class="w-[120px] h-[120px] rounded-lg border-white border-4 aspect-square object-contain" width={120} height={120}/>
+
+        <div class="flex flex-col md:flex-row lg:flex-col items-start md:items-center justify-start md:justify-center gap-4">
+            {
+                app.apple_link &&
+                <AppleButton link={app.apple_link}/>
+            }
+            {
+                app.web_link &&
+                <LinkButton link={app.web_link} subtext="View the website on a" label="New Tab">
+                    <i class="fa-notdog fa-solid fa-arrow-up-right-from-square"></i>
+                </LinkButton>
+            }
+            {
+                app.github_link &&
+                <LinkButton link={app.github_link} subtext="View the code on" label="Github" class="px-2.5 py-1">
+                    <img src="/social-icons/github.png" alt="Github" class="w-5 aspect-auto object-contain">
+                </LinkButton>
+            }
+        </div>
+    </div>
+    
+    <div class="w-min flex flex-col items-start justify-start gap-4 md:gap-8">
+        <strong class="w-full font-roboto-condensed font-medium text-xl md:text-3xl text-text text-center text-wrap">{app.name}</strong>
+        <p class="w-[50vw] font-ubuntu-mono font-normal text-text text-lg text-start md:text-center">{app.description}</p>
+
+        <div class="w-full flex flex-row items-start justify-center gap-4">
+            {
+                tools.filter((tool) => app.tools.some((t) => t.id === tool.id)).map((tool) => (
+                    <a href={tool.link} target="_blank" class="flex flex-row gap-2 items-center justify-center bg-gray-800 rounded-md hover:shadow-gray-400 shadow-md drop-shadow-l duration-300 ease-in-out px-4 py-2">
+                        {
+                            tool.icon &&
+                            <Image src={tool.icon} alt={tool.name} class="w-[40px] aspect-square" width={40} height={40}/>
+                        }
+                        <strong class="font-ubuntu-mono font-normal text-text text-lg text-start">{tool.name}</strong>
+                    </a>
+                ))
+            }
+        </div>
+
+        <div class="w-full flex flex-row flex-wrap items-start justify-center gap-4">
+            {
+                platforms.filter((platform) => sections.some((s) => s.platform === platform.name)).map((platform) => (
+                    <div class="flex flex-row gap-2 items-center justify-center bg-gray-600 rounded-md px-4 py-2">
+                        <i class={`${platform.icon} text-neutral-400`} ></i>
+                        <strong class="font-ubuntu-mono font-normal text-text text-lg text-start">{platform.name}</strong>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+	--font-montserrat: "Montserrat";
+	--font-ubuntu-mono: "Ubuntu Mono";
+	--font-roboto-condensed: "Roboto Condensed";
+	--font-noto-sans: "Noto Sans";
+
+	--color-background: #0F110C;
+	--color-text: #C5C5C5;
+	--color-primary: #F3AB8B;
+	--color-secondary: #C3967E;
+	--color-accent: #E5544B;
+}
+
+@custom-variant group-peer-checked (.peer:checked ~ .group &);

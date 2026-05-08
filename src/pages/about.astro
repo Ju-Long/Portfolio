@@ -1,0 +1,41 @@
+---
+import Layout from '@layouts/global.layout.astro';
+---
+<Layout title="About Me" description="About Me Page">
+    <div id="about-me" class="w-full h-full grid md:grid-cols-2 p-4">
+        <img src="/images/user.jpg" alt="Image of Me" class="w-full rounded-lg border-white border-4 aspect-auto object-contain"/>
+        <div class="w-full flex flex-col items-center justify-center p-4 text-center gap-4 pb-[100px]">
+            <strong>Hi, I'm Ju Long.</strong>
+            <p>I am a software developer with a passion for turning complex ideas into reality. Since starting my journey during my diploma, I have honed the technical skills and experience required to build robust software solutions.</p>
+            <p>I specialize in transforming business concepts into powerful software products.</p>
+            <p>Ready to bring your idea to life? Contact me today.</p>
+
+            <div class="flex flex-col md:flex-row items-center gap-4">
+                <a href={`https://t.me/babasama?text=${encodeURI("I just came from your website and want to talk to you about something...")}`} target="_blank" class="group flex flex-row items-center gap-2">
+                    <img src="/social-icons/telegram.png" alt="instagram" class="w-[30px] aspect-square"/>
+                    <span class="font-ubuntu-mono group-hover:underline text-xl">@BaBaSaMa</span>
+                </a>
+                <a href={`mailto:long@babasama.com?subject=${encodeURI("Enquiry from your website")}`} target="_blank" class="group flex flex-row items-center gap-2">
+                    <i class="fa-regular fa-envelope fa-2x"></i>
+                    <span class="font-ubuntu-mono group-hover:underline text-xl">long@babasama.com</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        import { selected_app } from "@/states";
+        import { navigate } from "astro:transitions/client";
+
+        document.addEventListener("astro:page-load", () => {
+            const pathname = window.location.pathname;
+            if (pathname !== "/about") return;
+
+            selected_app.listen((value) => {
+                if (pathname !== "/about") return;
+                navigate(`/${value}`);
+            })
+        });
+    </script>
+</Layout>

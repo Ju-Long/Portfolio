@@ -1,0 +1,24 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"include": [
+		".astro/types.d.ts",
+		"**/*"
+	],
+	"exclude": [
+		"dist"
+	],
+	"compilerOptions": {
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"outDir": "dist/",
+		"paths": {
+			"@controllers/*": ["./src/controllers/*"],
+			"@firebase/*": ["./src/firebase/*"],
+			"@views/*": ["./src/views/*"],
+			"@layouts/*": ["./src/layouts/*"],
+			"@styles/*": ["./src/styles/*"],
+			"@model/*": ["./src/model/*"],
+			"@/*": ["./src/*"]
+		}
+	}
+}

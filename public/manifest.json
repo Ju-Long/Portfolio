@@ -1,0 +1,17 @@
+{
+    "short_name": "Portfolio",
+    "name": "BaBaSaMa's Portfolio",
+    "icons": [
+        {
+            "src": "/profile.png",
+            "type": "image/png",
+            "sizes": "1024x1024"
+        }
+    ],
+    "start_url": "/",
+    "background_color": "#",
+    "display": "fullscreen",
+    "scope": "/",
+    "theme_color": "#0F110C",
+    "description": "BaBaSaMa's Portfolio Website"
+}

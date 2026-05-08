@@ -1,0 +1,266 @@
+---
+import type { Feature } from "@model/app";
+
+interface Props {
+    section_id: string,
+    features: Feature[]
+}
+
+const { section_id, features } = Astro.props
+
+const validFeatures = features.filter(
+    (f): f is Feature & { frames: string[] } => Array.isArray(f.frames) && f.frames.length > 0
+);
+const allFrames = validFeatures.flatMap((f) => f.frames);
+
+let cursor = 0;
+const ranges = validFeatures.map((feature) => {
+    const start = cursor;
+    cursor += feature.frames.length;
+    return { start, end: cursor };
+});
+---
+
+{validFeatures.length > 0 && (
+    <div id={`feature-frame-${section_id}`} class="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(var(--feature-count)_*_60dvh_+_40dvh)]" style={`--feature-count: ${Math.max(validFeatures.length, 1)};`} data-feature-frame data-frames={JSON.stringify(allFrames)} data-feature-ranges={JSON.stringify(ranges)}>
+        <div class="flex flex-col order-2 lg:order-1 ps-4 md:ps-12 lg:ps-24">
+            <div class="h-[20dvh] shrink-0" aria-hidden="true"></div>
+
+            { validFeatures.map((feature, idx) => (
+                <div class="feature-text group min-h-[60dvh] flex flex-col items-start justify-center snap-center" data-feature-index={idx}>
+                    <div class="px-5 py-4 rounded-md opacity-35 transition-all duration-500 ease-in-out group-data-[active]:opacity-100 group-data-[active]:bg-text">
+                        { feature.title && (
+                            <h3 class="font-montserrat font-semibold text-text text-2xl lg:text-3xl group-data-[active]:text-background transition-colors duration-500 ease-in-out">
+                                { feature.title }
+                            </h3>
+                        ) }
+
+                        { feature.description && (
+                            <p class="font-ubuntu-mono font-normal text-text text-base lg:text-lg max-w-[480px] mt-2 group-data-[active]:text-background transition-colors duration-500 ease-in-out">
+                                { feature.description }
+                            </p>
+                        ) }
+                    </div>
+                </div>
+            )) }
+
+            <div class="h-[20dvh] shrink-0" aria-hidden="true"></div>
+        </div>
+
+        <div class="relative order-1 lg:order-2">
+            <div class="sticky top-0 h-dvh flex items-center justify-center">
+                <canvas data-feature-canvas class="max-w-full max-h-[80dvh] rounded-lg" aria-label={`Animated preview for section ${section_id}`}></canvas>
+                <i data-feature-loader class="fa-solid fa-circle-notch fa-spin text-text text-4xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-100 data-[loaded]:opacity-0 transition-opacity duration-300 pointer-events-none" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+)}
+
+<script>
+    type Range = { start: number; end: number };
+
+    type Instance = {
+        section: HTMLElement,
+        canvas: HTMLCanvasElement,
+        ctx: CanvasRenderingContext2D,
+        images: HTMLImageElement[],
+        currentIndex: number,
+        ranges: Range[],
+        featureTexts: HTMLElement[],
+        activeFeatureIndex: number,
+        featureStartTime: number,
+        isVisible: boolean,
+    };
+
+    const FPS = 25;
+    const FRAME_INTERVAL = 1000 / FPS;
+
+    const loadImage = (url: string): Promise<HTMLImageElement> => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${url}`));
+        img.src = url;
+    });
+
+    const setup = async (section: HTMLElement): Promise<Instance | null> => {
+        const loader = section.querySelector<HTMLElement>('[data-feature-loader]');
+
+        try {
+            const canvas = section.querySelector<HTMLCanvasElement>('[data-feature-canvas]');
+            if (!canvas) return null;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return null;
+
+            let urls: string[] = [];
+            let ranges: Range[] = [];
+            try {
+                urls = JSON.parse(section.dataset.frames ?? '[]');
+                ranges = JSON.parse(section.dataset.featureRanges ?? '[]');
+            } catch {
+                return null;
+            }
+            if (!urls.length) return null;
+
+            const featureTexts = Array.from(section.querySelectorAll<HTMLElement>('[data-feature-index]'));
+
+            const first = await loadImage(urls[0]).catch(() => null);
+            if (!first) return null;
+
+            canvas.width = first.naturalWidth;
+            canvas.height = first.naturalHeight;
+            ctx.drawImage(first, 0, 0);
+
+            const images: HTMLImageElement[] = new Array(urls.length);
+            images[0] = first;
+
+            await Promise.all(urls.slice(1).map(async (url, i) => {
+                const idx = i + 1;
+                const img = await loadImage(url).catch(() => null);
+                images[idx] = img ?? images[idx - 1] ?? first;
+            }));
+
+            return {
+                section, canvas, ctx, images,
+                currentIndex: 0,
+                ranges,
+                featureTexts,
+                activeFeatureIndex: -1,
+                featureStartTime: 0,
+                isVisible: false,
+            };
+        } finally {
+            loader?.toggleAttribute('data-loaded', true);
+        }
+    };
+
+    const drawFrame = (inst: Instance, idx: number) => {
+        if (idx === inst.currentIndex) return;
+        const img = inst.images[idx];
+        if (!img) return;
+        inst.currentIndex = idx;
+        inst.ctx.clearRect(0, 0, inst.canvas.width, inst.canvas.height);
+        inst.ctx.drawImage(img, 0, 0);
+    };
+
+    const computeActiveFeature = (inst: Instance): number => {
+        const viewportCenter = window.innerHeight / 2;
+        let closest = 0;
+        let closestDist = Infinity;
+        inst.featureTexts.forEach((el, i) => {
+            const rect = el.getBoundingClientRect();
+            const center = rect.top + rect.height / 2;
+            const dist = Math.abs(center - viewportCenter);
+            if (dist < closestDist) {
+                closestDist = dist;
+                closest = i;
+            }
+        });
+        return closest;
+    };
+
+    const setActiveFeature = (inst: Instance, newActive: number, now: number) => {
+        inst.activeFeatureIndex = newActive;
+        inst.featureStartTime = now;
+        inst.featureTexts.forEach((el, i) => {
+            el.toggleAttribute('data-active', i === newActive);
+        });
+        const range = inst.ranges[newActive];
+        if (range) drawFrame(inst, range.start);
+    };
+
+    const isInView = (section: HTMLElement, margin = 0): boolean => {
+        const rect = section.getBoundingClientRect();
+        return rect.bottom > -margin && rect.top < window.innerHeight + margin;
+    };
+
+    let rafHandle = 0;
+    let instances: Instance[] = [];
+
+    const animate = (now: number) => {
+        let anyActive = false;
+        for (const inst of instances) {
+            if (!inst.isVisible) continue;
+            anyActive = true;
+
+            const newActive = computeActiveFeature(inst);
+            if (newActive !== inst.activeFeatureIndex) {
+                setActiveFeature(inst, newActive, now);
+                continue;
+            }
+
+            const range = inst.ranges[inst.activeFeatureIndex];
+            if (!range) continue;
+            const span = range.end - range.start;
+            if (span <= 0) continue;
+
+            const elapsed = now - inst.featureStartTime;
+            const offset = Math.floor(elapsed / FRAME_INTERVAL) % span;
+            drawFrame(inst, range.start + offset);
+        }
+
+        rafHandle = anyActive ? requestAnimationFrame(animate) : 0;
+    };
+
+    const startAnimation = () => {
+        if (rafHandle !== 0) return;
+        rafHandle = requestAnimationFrame(animate);
+    };
+
+    let cleanup: (() => void) | null = null;
+
+    const teardown = () => {
+        if (rafHandle) {
+            cancelAnimationFrame(rafHandle);
+            rafHandle = 0;
+        }
+        instances = [];
+        if (cleanup) {
+            cleanup();
+            cleanup = null;
+        }
+    };
+
+    const init = () => {
+        teardown();
+
+        const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-feature-frame]'));
+        if (!sections.length) return;
+
+        const pending = new WeakSet<HTMLElement>();
+        const sectionToInstance = new WeakMap<HTMLElement, Instance>();
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    const section = entry.target as HTMLElement;
+                    const existing = sectionToInstance.get(section);
+
+                    if (existing) {
+                        existing.isVisible = entry.isIntersecting;
+                        if (entry.isIntersecting) startAnimation();
+                        continue;
+                    }
+
+                    if (!entry.isIntersecting || pending.has(section)) continue;
+                    pending.add(section);
+                    setup(section).then((inst) => {
+                        if (!inst) return;
+                        instances.push(inst);
+                        sectionToInstance.set(section, inst);
+                        inst.isVisible = isInView(section, window.innerHeight * 0.25);
+                        if (inst.isVisible) startAnimation();
+                    });
+                }
+            },
+            { rootMargin: '25% 0px 25% 0px' }
+        );
+
+        sections.forEach((s) => observer.observe(s));
+
+        cleanup = () => observer.disconnect();
+    };
+
+    document.addEventListener('astro:page-load', init);
+    document.addEventListener('astro:before-swap', teardown);
+</script>

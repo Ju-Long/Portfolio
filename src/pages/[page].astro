@@ -1,0 +1,25 @@
+---
+import { getAppFromPage, fetchSections, fetchTools } from "@firebase/server.sync";
+
+import Layout from "@layouts/global.layout.astro";
+import Header from "@views/components/Header.astro";
+import AppSectionList from "@views/AppSectionList.astro";
+
+const { page } = Astro.params;
+if (!page) return Astro.redirect("/404");
+
+const app = await getAppFromPage(page);
+if (!app) return Astro.redirect("/404");
+
+const tools = await fetchTools();
+const sections = await fetchSections(app.id);
+---
+<Layout title={app.name} description={app.description} image={app.image}>
+    <div id="content-body" class="w-full h-full">
+        <Header app={app} tools={tools} sections={sections}/>
+
+        <div class="relative pb-[120px] md:pb-0 w-full h-full flex flex-col items-center">
+            <AppSectionList app={app} tools={tools} sections={sections}/>
+        </div>
+    </div>
+</Layout>
