@@ -87,24 +87,14 @@
 //                 feature_type: "frames",
 //                 features: [
 //                     {
-//                         title: "Standalone MapKit Integration",
-//                         description: "Native MapView rendering nearby bus stops and user location directly on-wrist.",
+//                         title: "Native MapView with Advance Clustering UI",
+//                         description: "Native MapView rendering nearby bus stops, with advance clustering UI to display bus stops.",
 //                         image: "watchos_mapkit.png"
 //                     },
 //                     {
-//                         title: "Real-Time Transport Data",
+//                         title: "Real-Time Bus Arrival Timings",
 //                         description: "Fetching and parsing live bus arrival timings via LTA DataMall API.",
 //                         image: "watchos_transport_data.png"
-//                     },
-//                     {
-//                         title: "Haptics & Notifications",
-//                         description: "Custom AlertManager executing native watchOS haptic feedback and notification delays.",
-//                         image: "watchos_haptics.png"
-//                     },
-//                     {
-//                         title: "Clustered UI",
-//                         description: "Algorithmically grouped bus stops (BusStopCluster) for optimized small-screen rendering.",
-//                         image: "watchos_clustered_ui.png"
 //                     }
 //                 ]
 //             },
