@@ -21,21 +21,18 @@ const ranges = validFeatures.map((feature) => {
 });
 ---
 
----
-
-{validFeatures.length > 0 && (
+{ validFeatures.length > 0 && (
     <div id={`feature-frame-${section_id}`} class="feature-frame-container w-full flex flex-col lg:flex-row relative bg-background" data-feature-frame data-frames={JSON.stringify(allFrames)} data-feature-ranges={JSON.stringify(ranges)}>
-        
-        <div class="w-full lg:w-1/2 h-dvh sticky top-0 z-0 flex items-center justify-center p-4 lg:order-2 ">
-            <canvas data-feature-canvas class="max-w-full max-h-[80dvh] rounded-lg object-contain" aria-label={`Animated preview for section ${section_id}`}></canvas>
+        <div class="w-full lg:w-1/2 h-dvh sticky top-0 z-10 lg:z-0 flex items-center justify-center p-4 lg:order-2 pointer-events-none lg:pointer-events-auto">
+            <canvas data-feature-canvas class="max-w-full max-h-[70dvh] rounded-lg object-contain" aria-label={`Animated preview for section ${section_id}`}></canvas>
             <i data-feature-loader class="fa-solid fa-circle-notch fa-spin text-text text-4xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-100 data-[loaded]:opacity-0 transition-opacity duration-300 pointer-events-none" aria-hidden="true"></i>
         </div>
 
-        <div class="w-full lg:w-1/2 z-10 lg:order-1">
+        <div class="w-full lg:w-1/2 z-0 lg:z-10 lg:order-1">
             <div class="py-[50dvh]">
                 { validFeatures.map((feature, idx) => (
-                    <div class="feature-section h-[100dvh] flex flex-col items-center justify-start w-full relative">
-                        <div class="feature-text group w-full px-4 md:px-12 lg:px-24 flex flex-col justify-center sticky top-[50dvh] -translate-y-1/2" data-feature-index={idx}>
+                    <div class="feature-section h-dvh flex flex-col items-center justify-start w-full relative">
+                        <div class="feature-text group w-full px-4 md:px-12 lg:px-24 flex flex-col justify-start lg:justify-center sticky top-0 lg:top-[50dvh] translate-y-0 lg:-translate-y-1/2 pt-6 lg:pt-0" data-feature-index={idx}>
                             <div class="feature-card group-data-[active]:opacity-100 group-data-[active]:bg-white">
                                 { feature.title && (
                                     <h3 class="feature-title group-data-[active]:text-background">
@@ -56,7 +53,7 @@ const ranges = validFeatures.map((feature) => {
         </div>
 
     </div>
-)}
+) }
 
 <script>
     type Range = { start: number; end: number };
@@ -146,13 +143,14 @@ const ranges = validFeatures.map((feature) => {
     };
 
     const computeActiveFeature = (inst: Instance): number => {
-        const viewportCenter = window.innerHeight / 2;
+        const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
         let closest = 0;
         let closestDist = Infinity;
         inst.featureTexts.forEach((el, i) => {
             const rect = el.getBoundingClientRect();
-            const center = rect.top + rect.height / 2;
-            const dist = Math.abs(center - viewportCenter);
+            // Match the top-0 position with pt-6 (approx 24px)
+            const targetTop = isDesktop ? (window.innerHeight / 2 - rect.height / 2) : 24;
+            const dist = Math.abs(rect.top - targetTop);
             if (dist < closestDist) {
                 closestDist = dist;
                 closest = i;
