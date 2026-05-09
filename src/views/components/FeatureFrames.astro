@@ -21,38 +21,40 @@ const ranges = validFeatures.map((feature) => {
 });
 ---
 
+---
+
 {validFeatures.length > 0 && (
-    <div id={`feature-frame-${section_id}`} class="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(var(--feature-count)_*_60dvh_+_40dvh)]" style={`--feature-count: ${Math.max(validFeatures.length, 1)};`} data-feature-frame data-frames={JSON.stringify(allFrames)} data-feature-ranges={JSON.stringify(ranges)}>
-        <div class="flex flex-col order-2 lg:order-1 ps-4 md:ps-12 lg:ps-24">
-            <div class="h-[20dvh] shrink-0" aria-hidden="true"></div>
-
-            { validFeatures.map((feature, idx) => (
-                <div class="feature-text group min-h-[60dvh] flex flex-col items-start justify-center snap-center" data-feature-index={idx}>
-                    <div class="px-5 py-4 rounded-md opacity-35 transition-all duration-500 ease-in-out group-data-[active]:opacity-100 group-data-[active]:bg-text">
-                        { feature.title && (
-                            <h3 class="font-montserrat font-semibold text-text text-2xl lg:text-3xl group-data-[active]:text-background transition-colors duration-500 ease-in-out">
-                                { feature.title }
-                            </h3>
-                        ) }
-
-                        { feature.description && (
-                            <p class="font-ubuntu-mono font-normal text-text text-base lg:text-lg max-w-[480px] mt-2 group-data-[active]:text-background transition-colors duration-500 ease-in-out">
-                                { feature.description }
-                            </p>
-                        ) }
-                    </div>
-                </div>
-            )) }
-
-            <div class="h-[20dvh] shrink-0" aria-hidden="true"></div>
+    <div id={`feature-frame-${section_id}`} class="feature-frame-container w-full flex flex-col lg:flex-row relative bg-background" data-feature-frame data-frames={JSON.stringify(allFrames)} data-feature-ranges={JSON.stringify(ranges)}>
+        
+        <div class="w-full lg:w-1/2 h-dvh sticky top-0 z-0 flex items-center justify-center p-4 lg:order-2 ">
+            <canvas data-feature-canvas class="max-w-full max-h-[80dvh] rounded-lg object-contain" aria-label={`Animated preview for section ${section_id}`}></canvas>
+            <i data-feature-loader class="fa-solid fa-circle-notch fa-spin text-text text-4xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-100 data-[loaded]:opacity-0 transition-opacity duration-300 pointer-events-none" aria-hidden="true"></i>
         </div>
 
-        <div class="relative order-1 lg:order-2">
-            <div class="sticky top-0 h-dvh flex items-center justify-center">
-                <canvas data-feature-canvas class="max-w-full max-h-[80dvh] rounded-lg" aria-label={`Animated preview for section ${section_id}`}></canvas>
-                <i data-feature-loader class="fa-solid fa-circle-notch fa-spin text-text text-4xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-100 data-[loaded]:opacity-0 transition-opacity duration-300 pointer-events-none" aria-hidden="true"></i>
+        <div class="w-full lg:w-1/2 z-10 lg:order-1">
+            <div class="py-[50dvh]">
+                { validFeatures.map((feature, idx) => (
+                    <div class="feature-section h-[100dvh] flex flex-col items-center justify-start w-full relative">
+                        <div class="feature-text group w-full px-4 md:px-12 lg:px-24 flex flex-col justify-center sticky top-[50dvh] -translate-y-1/2" data-feature-index={idx}>
+                            <div class="feature-card group-data-[active]:opacity-100 group-data-[active]:bg-white">
+                                { feature.title && (
+                                    <h3 class="feature-title group-data-[active]:text-background">
+                                        { feature.title }
+                                    </h3>
+                                ) }
+
+                                { feature.description && (
+                                    <p class="feature-desc group-data-[active]:text-background">
+                                        { feature.description }
+                                    </p>
+                                ) }
+                            </div>
+                        </div>
+                    </div>
+                )) }
             </div>
         </div>
+
     </div>
 )}
 

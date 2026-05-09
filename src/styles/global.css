@@ -14,3 +14,15 @@
 }
 
 @custom-variant group-peer-checked (.peer:checked ~ .group &);
+
+@layer components {
+	.feature-card {
+		@apply px-5 py-4 rounded-md opacity-35 transition-all duration-500 ease-in-out;
+	}
+	.feature-title {
+		@apply font-montserrat font-semibold text-text text-2xl lg:text-3xl transition-colors duration-500 ease-in-out;
+	}
+	.feature-desc {
+		@apply font-ubuntu-mono font-normal text-text text-base lg:text-lg max-w-[480px] mt-2 transition-colors duration-500 ease-in-out;
+	}
+}
