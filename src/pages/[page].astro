@@ -1,5 +1,6 @@
 ---
 import { getAppFromPage, fetchSections, fetchTools } from "@firebase/server.sync";
+import { platforms } from "@model/platforms";
 
 import Layout from "@layouts/global.layout.astro";
 import Header from "@views/components/Header.astro";
@@ -12,7 +13,13 @@ const app = await getAppFromPage(page);
 if (!app) return Astro.redirect("/404");
 
 const tools = await fetchTools();
-const sections = await fetchSections(app.id);
+let sections = await fetchSections(app.id);
+
+sections = sections.sort((a, b) => {
+    const indexA = platforms.findIndex(p => p.name === a.platform);
+    const indexB = platforms.findIndex(p => p.name === b.platform);
+    return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+})
 ---
 <Layout title={app.name} description={app.description} image={app.image}>
     <div id="content-body" class="w-full h-full">
