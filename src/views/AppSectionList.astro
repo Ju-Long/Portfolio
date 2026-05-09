@@ -19,7 +19,7 @@ const { sections } = Astro.props
             const indexB = platforms.findIndex(p => p.name === b.platform);
             return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
         }).map((section, index) => (
-            <section class="w-full flex flex-col items-center gap-4">
+            <section id={`section-${section.platform}`} class="w-full flex flex-col items-center gap-4">
                 <div class="w-full section-header flex flex-col items-start justify-center gap-4 px-4 md:px-12 lg:px-24">
                     <strong class="font-montserrat font-normal text-text text-2xl">Section {index + 1}: { section.title }</strong>
                     <div class="w-full flex flex-row items-center justify-start gap-4">
