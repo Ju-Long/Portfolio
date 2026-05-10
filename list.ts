@@ -252,18 +252,18 @@
 //                 feature_type: "frames",
 //                 features: [
 //                     {
-//                         title: "In-App Native Reading Engine",
-//                         description: "Custom content parser that strips web clutter to present news in a clean, native format, supporting paragraphs, images, embedded videos, and list items.",
+//                         title: "In-App Multi-Preference Reading Method",
+//                         description: "Read article in-app or with default webview, with just 1 tap.",
 //                         image: "native_reader_view"
 //                     },
 //                     {
-//                         title: "AI-Powered News Speech",
-//                         description: "Integrated Text-to-Speech (TTS) using AVSpeechSynthesizer, allowing users to listen to news headlines and full article content with granular playback controls.",
+//                         title: "Topic Based Filtering",
+//                         description: "Fetch News via topics, read what you want to read.",
 //                         image: "tts_playback_controls"
 //                     },
 //                     {
-//                         title: "Multi-Source Filtering & Search",
-//                         description: "Dynamic filtering system allowing users to isolate news by source (e.g., CNA, Straits Times) and topics like Singapore, Business, and Tech.",
+//                         title: "Multi-Quick Access Menu",
+//                         description: "Copy News Title, Description, URL, Cover Image or Share for any articles, with built in preview.",
 //                         image: "mobile_filter_interface"
 //                     }
 //                 ]

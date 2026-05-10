@@ -23,8 +23,8 @@ const ranges = validFeatures.map((feature) => {
 
 { validFeatures.length > 0 && (
     <div id={`feature-frame-${section_id}`} class="feature-frame-container w-full flex flex-col lg:flex-row relative bg-background" data-feature-frame data-frames={JSON.stringify(allFrames)} data-feature-ranges={JSON.stringify(ranges)}>
-        <div class="w-full lg:w-1/2 h-dvh sticky top-0 z-10 lg:z-0 flex items-center justify-center p-4 lg:order-2 pointer-events-none lg:pointer-events-auto">
-            <canvas data-feature-canvas class="max-w-full max-h-[70dvh] rounded-lg object-contain" aria-label={`Animated preview for section ${section_id}`}></canvas>
+        <div class="w-full lg:w-1/2 h-dvh sticky top-0 z-10 lg:z-0 flex items-end md:items-center justify-center p-4 lg:order-2 pointer-events-none lg:pointer-events-auto">
+            <canvas data-feature-canvas class="max-w-full max-h-[65dvh] lg:max-h-[80dvh] rounded-lg object-contain" aria-label={`Animated preview for section ${section_id}`}></canvas>
             <i data-feature-loader class="fa-solid fa-circle-notch fa-spin text-text text-4xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-100 data-[loaded]:opacity-0 transition-opacity duration-300 pointer-events-none" aria-hidden="true"></i>
         </div>
 
