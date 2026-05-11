@@ -1,0 +1,9 @@
+---
+import { getAppFromPage } from "@firebase/server.sync";
+
+const { page } = Astro.params;
+if (!page) return Astro.redirect("/404");
+
+const app = await getAppFromPage(page);
+if (!app) return Astro.redirect("/404");
+---

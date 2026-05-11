@@ -21,6 +21,7 @@ sections = sections.sort((a, b) => {
     return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
 })
 ---
+
 <Layout title={app.name} description={app.description} image={app.image}>
     <div id="content-body" class="w-full h-full">
         <Header app={app} tools={tools} sections={sections}/>

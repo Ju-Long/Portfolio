@@ -13,6 +13,14 @@ export interface App {
     tools: DocumentReference[]
 }
 
+export interface AppPreview {
+    id: string,
+    width: number,
+    image: string,
+    image_path: string,
+    app: DocumentReference
+}
+
 export interface AppSection {
     id: string,
     title: string,

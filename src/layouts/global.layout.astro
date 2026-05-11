@@ -6,6 +6,11 @@ import { ClientRouter } from 'astro:transitions';
 import Dock from '@views/components/Dock.astro';
 import SocialIcon from '@views/components/SocialIcon.astro';
 
+import { fetchApps } from "@firebase/server.sync";
+import type { TransitionAnimation, TransitionAnimationPair, TransitionDirectionalAnimations } from "astro";
+
+const apps = await fetchApps();
+
 interface Props {
 	title: string,
 	description: string,
@@ -14,6 +19,30 @@ interface Props {
 
 const { title, description, image } = Astro.props;
 const link = Astro.request.url;
+
+const old_animation: TransitionAnimation = {
+	name: "genie",
+	duration: 500,
+	easing: "ease-in-out",
+	direction: "normal"
+}
+
+const new_animation: TransitionAnimation = {
+	name: "genie",
+	duration: 500,
+	easing: "ease-in-out",
+	direction: "reverse"
+}
+
+const animate: TransitionAnimationPair = {
+	old: old_animation,
+	new: new_animation
+}
+
+const genie_transition: TransitionDirectionalAnimations = {
+	forwards: animate,
+	backwards: animate
+}
 ---
 <!doctype html>
 <html lang="en">
@@ -33,6 +62,12 @@ const link = Astro.request.url;
 		
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"/>
 		<title>BaBaSaMa - {title}</title>
+
+		{
+			apps.map((app) => (
+				<link rel="preload" href={app.image} as="image" />
+			))
+		}
 	
 		<meta property="title" content={`BaBaSaMa - ${title}`}>
 		<meta property="description" content={description}>
@@ -55,9 +90,9 @@ const link = Astro.request.url;
 		<ClientRouter/>
 	</head>
 	<body class="bg-background relative font-montserrat text-white overflow-y-auto overflow-x-hidden snap-y snap-proximity">
-		<header id="profile-tab" class="group fixed flex flex-col items-start justify-start gap-6 p-4" transition:persist>
-			<button id="visit-about" type="button">
-				<img src="/images/profile.png" alt="Me" class="rounded-full border-white border-[2px] h-[50px] aspect-square w-auto"/>
+		<header id="profile-tab" class="group fixed flex flex-col items-center justify-start gap-6 p-4 z-50 ease-in-out duration-300" transition:persist>
+			<button id="visit-about" type="button" class="rounded-full border-white border-2 group-hover:border-4 ease-in-out duration-300 group-hover:shadow-white drop-shadow-md shadow-md">
+				<img src="/images/profile.png" alt="Me" class="h-[50px] aspect-square w-auto"/>
 			</button>
 
 			<SocialIcon id="instagram-icon" href="https://www.instagram.com/babasama._?igsh=MWd5d2NqaHVzZnhlMA%3D%3D&utm_source=qr" src="/social-icons/instagram.png" alt="instagram"/>
@@ -67,7 +102,11 @@ const link = Astro.request.url;
 			<SocialIcon id="linkedin-icon" href="https://www.linkedin.com/in/ju-long/" src="/social-icons/linkedin.png" alt="linkedin"/>
 
 			<a id="envelope-icon" href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#x6c;&#x6f;&#x6e;&#x67;&#x40;&#x62;&#x61;&#x62;&#x61;&#x73;&#x61;&#x6d;&#x61;&#x2e;&#x63;&#x6f;&#x6d;" target="_blank" class="opacity-0 duration-300 ease-in-out group-hover:opacity-100">
-				<i class="fa-regular fa-envelope fa-2x"></i>
+				<i class="fa-slab fa-regular fa-envelope fa-2x"></i>
+			</a>
+
+			<a href="https://www.upwork.com/freelancers/~01bd8f8bf33a0c9524" target="_blank" class="opacity-0 duration-300 ease-in-out group-hover:opacity-100">
+				<i class="fa-slab fa-regular fa-briefcase fa-2x"></i>
 			</a>
 		</header>
 
@@ -121,5 +160,22 @@ const link = Astro.request.url;
                 navigate(`/${app ?? ""}`);
             });
 		</script>
+
+		<style is:global>
+			@keyframes genie {
+				0% {
+					opacity: 1;
+					transform: scale(0.1) translateX(0);
+				}
+				50% {
+					opacity: 1;
+					transform: scale(0.5);
+				}
+				100% {
+					opacity: 1;
+					transform: scale(1) translateX(0);
+				}
+			}
+		</style>
 	</body>
 </html>

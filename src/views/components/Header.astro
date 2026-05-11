@@ -44,7 +44,7 @@ const { app, tools, sections } = Astro.props
         <p class="w-[50vw] font-ubuntu-mono font-normal text-text text-lg text-start">{app.description}</p>
     </div>
 
-    <div class="w-full flex flex-col lg:flex-row flex-wrap items-start justify-start gap-4">
+    <div class="w-full flex flex-col lg:flex-row flex-wrap items-start justify-start lg:justify-end gap-4">
         {
             tools.filter((tool) => app.tools.some((t) => t.id === tool.id)).map((tool) => (
                 <a href={tool.link} target="_blank" class="flex flex-row gap-2 items-center justify-center bg-gray-800 rounded-md hover:shadow-gray-400 shadow-md drop-shadow-l duration-300 ease-in-out px-4 py-2">

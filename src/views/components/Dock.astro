@@ -148,7 +148,12 @@
     const open_app = (id: string, page: string) => {
         const memory = app_memory.get();
         app_memory.set([id, ...memory.filter((m) => m !== id)]);
-        selected_app.set(page);
+
+        if (selected_app.get() == page) {
+            selected_app.set(undefined);
+        } else {
+            selected_app.set(page);
+        }
     };
 
     dock_icons.addEventListener('click', (event) => {

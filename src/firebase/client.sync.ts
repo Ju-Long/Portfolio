@@ -1,4 +1,4 @@
-import type { App } from "@model/app";
+import type { App, AppPreview } from "@model/app";
 
 import { firestore } from "./client";
 
@@ -13,4 +13,16 @@ const convertFirestoreToApp = (document: QueryDocumentSnapshot<DocumentData, Doc
 export const fetchApps = async(): Promise<App[]> => {
     const snapshot = await getDocs(collection(firestore, "apps"));
     return snapshot.docs.map((doc) => convertFirestoreToApp(doc));
+}
+
+// MARK: - Previews
+const convertFirestoreToPreview = (document: QueryDocumentSnapshot<DocumentData, DocumentData>): AppPreview => {
+    const id = document.id;
+    const { width, image, image_path, app } = document.data();
+    return { id, width, image, image_path, app }
+}
+
+export const fetchPreviews = async(): Promise<AppPreview[]> => {
+    const snapshot = await getDocs(collection(firestore, "previews"));
+    return snapshot.docs.map((doc) => convertFirestoreToPreview(doc));
 }

@@ -1,4 +1,4 @@
-import type { App, AppSection, AppTool } from "@model/app";
+import type { App, AppPreview, AppSection, AppTool } from "@model/app";
 
 import { firestore } from "./server";
 
@@ -43,4 +43,21 @@ const convertFirestoreToSection = (document: QueryDocumentSnapshot<DocumentData,
 export const fetchSections = async(id: string): Promise<AppSection[]> => {
     const snapshot = await firestore.collection("sections").where("app", "==", firestore.doc(`apps/${id}`)).get();
     return snapshot.docs.map((doc) => convertFirestoreToSection(doc));
+}
+
+// MARK: - Previews
+const convertFirestoreToPreviews = (document: QueryDocumentSnapshot<DocumentData, DocumentData>): AppPreview => {
+    const id = document.id;
+    const { width, image, image_path, app } = document.data();
+    return { id, width, image, image_path, app }
+}
+
+export const fetchPreviews = async(): Promise<AppPreview[]> => {
+    const snapshot = await firestore.collection("previews").get();
+    return snapshot.docs.map((doc) => convertFirestoreToPreviews(doc));
+}
+
+export const getPreviewForApp = async(appId: string): Promise<AppPreview | undefined> => {
+    const snapshot = await firestore.collection("previews").where("app", "==", firestore.doc(`apps/${appId}`)).get();
+    return snapshot.docs.map((doc) => convertFirestoreToPreviews(doc))[0];
 }
