@@ -203,7 +203,6 @@ const genie_transition: TransitionDirectionalAnimations = {
 					if (app) {
 						const preview = await getPreviewFromApp(app.ref);
 						const image = preview?.image ?? app.get("image") ?? "./profile.png";
-						console.log("transition image:", image);
 
 						if (transition_screen.get()) {
 							transition_screen.get()?.destroy();
