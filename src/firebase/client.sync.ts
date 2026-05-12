@@ -39,8 +39,8 @@ export const fetchPreviews = async(): Promise<AppPreview[]> => {
     return snapshot.docs.map((doc) => convertFirestoreToPreview(doc));
 }
 
-export const getPreviewFromApp = async(app: DocumentReference): Promise<AppPreview | undefined> => {
+export const getPreviewsFromApp = async(app: DocumentReference): Promise<AppPreview[]> => {
     const snapshot = await getDocs(query(collection(firestore, "previews"), where("app", "==", app)));
-    const previewDoc = snapshot.docs.find((doc) => doc.get("app").id === app.id);
-    return previewDoc ? convertFirestoreToPreview(previewDoc) : undefined;
+    const previews = snapshot.docs.map((doc) => convertFirestoreToPreview(doc));
+    return previews;
 }

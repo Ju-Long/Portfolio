@@ -126,7 +126,7 @@ const genie_transition: TransitionDirectionalAnimations = {
 			import { selected_app, app_memory, transition_screen } from "@/states";
 			import { GenieTransition } from "@model/GeineTransition";
 
-			import { getAppSnapshotFromPath, getPreviewFromApp } from "@firebase/client.sync";
+			import { getAppSnapshotFromPath, getPreviewsFromApp } from "@firebase/client.sync";
 
 			import { app } from "@firebase/client";
 			import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
@@ -185,6 +185,16 @@ const genie_transition: TransitionDirectionalAnimations = {
                 navigate(`/${app ?? ""}`);
             });
 
+			const createPreloadAsset = (href: string) => {
+				const link = document.createElement('link');
+				link.rel = 'preload';
+				link.as = 'image';
+				link.href = href;
+				link.fetchPriority = 'high';
+				document.head.appendChild(link);
+				return;
+			}
+
 			const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 			document.addEventListener("astro:before-preparation", async(event) => {
@@ -201,8 +211,21 @@ const genie_transition: TransitionDirectionalAnimations = {
 
 					const app = await getAppSnapshotFromPath(app_path);
 					if (app) {
-						const preview = await getPreviewFromApp(app.ref);
-						const image = preview?.image ?? app.get("image") ?? "./profile.png";
+						const preview = await getPreviewsFromApp(app.ref);
+						let image = app.get("image") ?? "./profile.png";
+						if (window.innerWidth <= 550) {
+							image = preview?.find((p) => p.width === 433)?.image ?? image;
+						} else if (window.innerWidth <= 880) {
+							image = preview?.find((p) => p.width === 768)?.image ?? image;
+						} else if (window.innerWidth <= 1200) {
+							image = preview?.find((p) => p.width === 1024)?.image ?? image;
+						} else if (window.innerWidth <= 1550) {
+							image = preview?.find((p) => p.width === 1366)?.image ?? image;
+						} else {
+							image = preview?.find((p) => p.width === 1920)?.image ?? image;
+						}
+						createPreloadAsset(image);
+						console.log(image);
 
 						if (transition_screen.get()) {
 							transition_screen.get()?.destroy();
