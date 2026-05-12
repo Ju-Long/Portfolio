@@ -2,7 +2,7 @@ import type { App, AppPreview } from "@model/app";
 
 import { firestore } from "./client";
 
-import { collection, getDocs, type DocumentData, type QueryDocumentSnapshot } from "firebase/firestore";
+import { collection, getDocs, where, query, type DocumentData, type QueryDocumentSnapshot, type DocumentReference } from "firebase/firestore";
 
 const convertFirestoreToApp = (document: QueryDocumentSnapshot<DocumentData, DocumentData>): App => {
     const id = document.id;
@@ -15,6 +15,18 @@ export const fetchApps = async(): Promise<App[]> => {
     return snapshot.docs.map((doc) => convertFirestoreToApp(doc));
 }
 
+export const getAppFromPath = async(path: string): Promise<App | undefined> => {
+    const snapshot = await getDocs(query(collection(firestore, "apps"), where("page", "==", path)));
+    const appDoc = snapshot.docs.find((doc) => doc.get("page") === path);
+    return appDoc ? convertFirestoreToApp(appDoc) : undefined;
+}
+
+export const getAppSnapshotFromPath = async(path: string): Promise<QueryDocumentSnapshot<DocumentData, DocumentData> | undefined> => {
+    const snapshot = await getDocs(query(collection(firestore, "apps"), where("page", "==", path)));
+    const appDoc = snapshot.docs.find((doc) => doc.get("page") === path);
+    return appDoc ? appDoc : undefined;
+}
+
 // MARK: - Previews
 const convertFirestoreToPreview = (document: QueryDocumentSnapshot<DocumentData, DocumentData>): AppPreview => {
     const id = document.id;
@@ -25,4 +37,10 @@ const convertFirestoreToPreview = (document: QueryDocumentSnapshot<DocumentData,
 export const fetchPreviews = async(): Promise<AppPreview[]> => {
     const snapshot = await getDocs(collection(firestore, "previews"));
     return snapshot.docs.map((doc) => convertFirestoreToPreview(doc));
+}
+
+export const getPreviewFromApp = async(app: DocumentReference): Promise<AppPreview | undefined> => {
+    const snapshot = await getDocs(query(collection(firestore, "previews"), where("app", "==", app)));
+    const previewDoc = snapshot.docs.find((doc) => doc.get("app").id === app.id);
+    return previewDoc ? convertFirestoreToPreview(previewDoc) : undefined;
 }
