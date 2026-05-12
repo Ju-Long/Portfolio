@@ -185,6 +185,47 @@ const genie_transition: TransitionDirectionalAnimations = {
                 navigate(`/${app ?? ""}`);
             });
 
+			// Scroll detection for hiding/showing header and dock
+			const header = document.getElementById('profile-tab') as HTMLElement;
+			const dock = document.getElementById('dock') as HTMLElement;
+			let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+			let lastScrollY = 0;
+			let isScrolling = false;
+
+			const showElements = () => {
+				header.classList.remove('hide-header');
+				dock.classList.remove('hide-dock');
+				isScrolling = false;
+			};
+
+			const hideElements = () => {
+				header.classList.add('hide-header');
+				dock.classList.add('hide-dock');
+				isScrolling = true;
+			};
+
+			window.addEventListener('scroll', () => {
+				const currentScrollY = window.scrollY;
+				
+				// Only hide if scrolling down
+				if (currentScrollY > lastScrollY && currentScrollY > 100) {
+					if (!isScrolling) hideElements();
+				} else {
+					// Show if scrolling up
+					if (isScrolling) showElements();
+				}
+
+				lastScrollY = currentScrollY;
+
+				// Clear existing timeout
+				if (scrollTimeout) clearTimeout(scrollTimeout);
+
+				// Set new timeout to show elements after 2 seconds of no scrolling
+				scrollTimeout = setTimeout(() => {
+					showElements();
+				}, 2000);
+			});
+
 			const createPreloadAsset = (href: string) => {
 				const link = document.createElement('link');
 				link.rel = 'preload';

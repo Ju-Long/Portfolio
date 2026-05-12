@@ -25,4 +25,16 @@
 	.feature-desc {
 		@apply font-ubuntu-mono font-normal text-text text-base lg:text-lg max-w-[480px] mt-2 transition-colors duration-500 ease-in-out;
 	}
+	#profile-tab {
+		@apply transition-transform duration-500 ease-in-out;
+	}
+	#profile-tab.hide-header {
+		@apply -translate-y-full;
+	}
+	#dock {
+		@apply transition-transform duration-500 ease-in-out;
+	}
+	#dock.hide-dock {
+		@apply translate-y-full;
+	}
 }

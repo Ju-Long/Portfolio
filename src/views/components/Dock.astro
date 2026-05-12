@@ -184,10 +184,10 @@
 
     apps.listen(render);
     app_memory.listen(render);
-    document.addEventListener('astro:page-load', apply_selected_state);
+    document.addEventListener('astro:page-load', async() => {
+        apply_selected_state()
 
-    (async () => {
         const fetched = await fetchApps();
         apps.set(fetched);
-    })();
+    });
 </script>
