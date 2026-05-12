@@ -7,11 +7,11 @@ interface Props {
 
 const { features } = Astro.props
 ---
-<div class="swiper max-w-dvw">
-    <div class="swiper-wrapper max-w-dvw">
+<div class="swiper max-w-dvw z-10">
+    <div class="swiper-wrapper max-w-dvw z-10">
         {
             features.map((feature) => (
-                <div class="swiper-slide w-dvw md:max-w-[50dvw]">
+                <div class="swiper-slide w-dvw md:max-w-[50dvw] z-10">
                     <img 
                         src={feature.image} 
                         alt="" 

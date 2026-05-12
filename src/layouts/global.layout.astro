@@ -110,6 +110,8 @@ const genie_transition: TransitionDirectionalAnimations = {
 			</a>
 		</header>
 
+		<div id="transition-screen" class="fixed top-0 left-0 w-screen h-screen z-50 hidden" transition:persist></div>
+
 		<main class="w-screen">
 			<slot/>
 		</main>
@@ -119,8 +121,12 @@ const genie_transition: TransitionDirectionalAnimations = {
         </nav>
 
 		<script>
-			import { selected_app, app_memory } from "@/states";
             import { navigate } from "astro:transitions/client";
+
+			import { selected_app, app_memory, transition_screen } from "@/states";
+			import { GenieTransition } from "@model/GeineTransition";
+
+			import { getAppSnapshotFromPath, getPreviewFromApp } from "@firebase/client.sync";
 
             const APP_MEMORY_KEY = "app_memory";
 
@@ -136,7 +142,11 @@ const genie_transition: TransitionDirectionalAnimations = {
 				return check;
 			}
 
+			const transition_screen_element = document.getElementById("transition-screen") as HTMLDivElement;
             document.addEventListener("astro:page-load", () => {
+				console.log("page load")
+				transition_screen_element.classList.add("hidden");
+
                 const stored = localStorage.getItem(APP_MEMORY_KEY);
                 if (!stored) return;
                 try {
@@ -159,23 +169,49 @@ const genie_transition: TransitionDirectionalAnimations = {
             selected_app.listen((app) => {
                 navigate(`/${app ?? ""}`);
             });
-		</script>
 
-		<style is:global>
-			@keyframes genie {
-				0% {
-					opacity: 1;
-					transform: scale(0.1) translateX(0);
+			const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+			document.addEventListener("astro:before-preparation", async(event) => {
+				const original_loader = event.loader;
+				event.loader = async() => {
+					transition_screen_element.innerHTML = "";
+					transition_screen_element.classList.remove("hidden");
+
+					const to = event.to.pathname.substring(1);
+					let app_path = to;
+					if (to === "" || to === "about") {
+						app_path = event.from.pathname.substring(1);
+					}
+
+					const app = await getAppSnapshotFromPath(app_path);
+					if (app) {
+						const preview = await getPreviewFromApp(app.ref);
+						const image = preview?.image ?? app.get("image") ?? "./profile.png";
+						console.log("transition image:", image);
+
+						if (transition_screen.get()) {
+							transition_screen.get()?.destroy();
+							transition_screen.set(undefined);
+						}
+						
+						transition_screen.set(new GenieTransition(transition_screen_element, image));
+						if (to === "" || to === "about") {
+							transition_screen.get()?.close();
+						} else {
+							transition_screen.get()?.open();
+						}
+					}
+
+					await original_loader();
+					await sleep(2000);
+					stop();
 				}
-				50% {
-					opacity: 1;
-					transform: scale(0.5);
-				}
-				100% {
-					opacity: 1;
-					transform: scale(1) translateX(0);
-				}
-			}
-		</style>
+			});
+
+			document.addEventListener("astro:after-swap", () =>
+				window.scrollTo({ left: 0, top: 0, behavior: "instant" }),
+			);
+		</script>
 	</body>
 </html>
