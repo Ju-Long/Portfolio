@@ -128,13 +128,28 @@ const genie_transition: TransitionDirectionalAnimations = {
 
 			import { getAppSnapshotFromPath, getPreviewFromApp } from "@firebase/client.sync";
 
+			import { app } from "@firebase/client";
+			import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+
             const APP_MEMORY_KEY = "app_memory";
 
 			declare global {
 				interface Window {
 					mobileCheck: () => boolean,
+					FIREBASE_APPCHECK_DEBUG_TOKEN: boolean,
 				}
 			}
+
+			self.FIREBASE_APPCHECK_DEBUG_TOKEN = window.location.host === "localhost:4321";
+
+			(async() => {
+				initializeAppCheck(app, {
+					provider: new ReCaptchaV3Provider(
+						"6Ldp0iUsAAAAAKL34xdqyMdPiLxaOItJV0w5u0lS",
+					),
+					isTokenAutoRefreshEnabled: true,
+				});
+			})()
 
 			window.mobileCheck = () => {
 				let check = false;
