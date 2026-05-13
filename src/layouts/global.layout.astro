@@ -6,7 +6,7 @@ import { ClientRouter } from 'astro:transitions';
 import Dock from '@views/components/Dock.astro';
 import SocialIcon from '@views/components/SocialIcon.astro';
 
-import { fetchApps } from "@firebase/server.sync";
+import { fetchApps, fetchPreviews } from "@firebase/server.sync";
 import type { TransitionAnimation, TransitionAnimationPair, TransitionDirectionalAnimations } from "astro";
 
 const apps = await fetchApps();
@@ -19,30 +19,6 @@ interface Props {
 
 const { title, description, image } = Astro.props;
 const link = Astro.request.url;
-
-const old_animation: TransitionAnimation = {
-	name: "genie",
-	duration: 500,
-	easing: "ease-in-out",
-	direction: "normal"
-}
-
-const new_animation: TransitionAnimation = {
-	name: "genie",
-	duration: 500,
-	easing: "ease-in-out",
-	direction: "reverse"
-}
-
-const animate: TransitionAnimationPair = {
-	old: old_animation,
-	new: new_animation
-}
-
-const genie_transition: TransitionDirectionalAnimations = {
-	forwards: animate,
-	backwards: animate
-}
 ---
 <!doctype html>
 <html lang="en">
@@ -116,17 +92,14 @@ const genie_transition: TransitionDirectionalAnimations = {
 			<slot/>
 		</main>
 
-        <nav id="dock" class="fixed bottom-0 w-screen mb-4" transition:persist>
+        <nav id="dock" class="fixed bottom-0 w-screen mb-4 z-40" transition:persist>
             <Dock/>
         </nav>
 
 		<script>
             import { navigate } from "astro:transitions/client";
 
-			import { selected_app, app_memory, transition_screen } from "@/states";
-			import { GenieTransition } from "@model/GeineTransition";
-
-			import { getAppSnapshotFromPath, getPreviewsFromApp } from "@firebase/client.sync";
+			import { selected_app, app_memory } from "@/states";
 
 			import { app } from "@firebase/client";
 			import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
@@ -159,7 +132,6 @@ const genie_transition: TransitionDirectionalAnimations = {
 
 			const transition_screen_element = document.getElementById("transition-screen") as HTMLDivElement;
             document.addEventListener("astro:page-load", () => {
-				console.log("page load")
 				transition_screen_element.classList.add("hidden");
 
                 const stored = localStorage.getItem(APP_MEMORY_KEY);
@@ -182,6 +154,9 @@ const genie_transition: TransitionDirectionalAnimations = {
             });
 
             selected_app.listen((app) => {
+				if (app === window.location.pathname.replace("/", "")) return;
+
+				console.log("navigating to", app);
                 navigate(`/${app ?? ""}`);
             });
 
@@ -217,79 +192,22 @@ const genie_transition: TransitionDirectionalAnimations = {
 
 				lastScrollY = currentScrollY;
 
-				// Clear existing timeout
 				if (scrollTimeout) clearTimeout(scrollTimeout);
 
-				// Set new timeout to show elements after 2 seconds of no scrolling
 				scrollTimeout = setTimeout(() => {
 					showElements();
 				}, 2000);
 			});
 
-			const createPreloadAsset = (href: string) => {
-				const link = document.createElement('link');
-				link.rel = 'preload';
-				link.as = 'image';
-				link.href = href;
-				link.fetchPriority = 'high';
-				document.head.appendChild(link);
-				return;
-			}
-
-			const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-			document.addEventListener("astro:before-preparation", async(event) => {
-				const original_loader = event.loader;
-				event.loader = async() => {
-					transition_screen_element.innerHTML = "";
-					transition_screen_element.classList.remove("hidden");
-
-					const to = event.to.pathname.substring(1);
-					let app_path = to;
-					if (to === "" || to === "about") {
-						app_path = event.from.pathname.substring(1);
-					}
-
-					const app = await getAppSnapshotFromPath(app_path);
-					if (app) {
-						const preview = await getPreviewsFromApp(app.ref);
-						let image = app.get("image") ?? "./profile.png";
-						if (window.innerWidth <= 550) {
-							image = preview?.find((p) => p.width === 433)?.image ?? image;
-						} else if (window.innerWidth <= 880) {
-							image = preview?.find((p) => p.width === 768)?.image ?? image;
-						} else if (window.innerWidth <= 1200) {
-							image = preview?.find((p) => p.width === 1024)?.image ?? image;
-						} else if (window.innerWidth <= 1550) {
-							image = preview?.find((p) => p.width === 1366)?.image ?? image;
-						} else {
-							image = preview?.find((p) => p.width === 1920)?.image ?? image;
-						}
-						createPreloadAsset(image);
-						console.log(image);
-
-						if (transition_screen.get()) {
-							transition_screen.get()?.destroy();
-							transition_screen.set(undefined);
-						}
-						
-						transition_screen.set(new GenieTransition(transition_screen_element, image));
-						if (to === "" || to === "about") {
-							transition_screen.get()?.close();
-						} else {
-							transition_screen.get()?.open();
-						}
-					}
-
-					await original_loader();
-					await sleep(2000);
-					stop();
-				}
-			});
-
 			document.addEventListener("astro:after-swap", () =>
 				window.scrollTo({ left: 0, top: 0, behavior: "instant" }),
 			);
+
+			(async() => {
+				if (selected_app.get() === undefined) {
+					selected_app.set(window.location.pathname.replace("/", "") || undefined);
+				}
+			})()
 		</script>
 	</body>
 </html>

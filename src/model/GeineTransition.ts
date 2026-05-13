@@ -7,8 +7,10 @@ export class GenieTransition {
     private renderer: THREE.WebGLRenderer;
     private mesh: THREE.Mesh;
     private material: THREE.ShaderMaterial;
+    private animationFrameId: number = 0;
 
     destroy() {
+        cancelAnimationFrame(this.animationFrameId);
         this.renderer.dispose();
         this.material.dispose();
         if (this.material.uniforms.uTexture.value) {
@@ -30,11 +32,9 @@ export class GenieTransition {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         container.appendChild(this.renderer.domElement);
 
-        const texture = new THREE.TextureLoader().load(imageUrl);
-
         this.material = new THREE.ShaderMaterial({
             uniforms: {
-                uTexture: { value: texture },
+                uTexture: { value: null },
                 uProgress: { value: 0.0 },
                 uResolution: { value: new THREE.Vector2(width, height) },
                 uInitialSize: { value: 80.0 }
@@ -108,15 +108,32 @@ export class GenieTransition {
             transparent: true
         });
 
-        // 128 segments for smooth bending curves
         this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height, 128, 128), this.material);
         this.scene.add(this.mesh);
         this.animate();
+
+        const loadTexture = async (url: string, maxRetries: number = 3): Promise<THREE.Texture> => {
+            const loader = new THREE.TextureLoader();
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    return await loader.loadAsync(url);
+                } catch (error) {
+                    console.warn(`Texture load attempt ${attempt}/${maxRetries} failed for: ${url}`, error);
+                    if (attempt < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+            }
+            throw new Error(`Failed to load texture after ${maxRetries} attempts: ${url}`);
+        };
+
+        loadTexture(imageUrl).then((texture) => {
+            this.material.uniforms.uTexture.value = texture;
+        }).catch((error) => {
+            console.error(error);
+        });
     }
 
-    /**
-     * Sequence: Expand Height -> Expand Top -> Expand All
-     */
     public open() {
         gsap.to(this.material.uniforms.uProgress, {
             value: 1.0,
@@ -125,9 +142,6 @@ export class GenieTransition {
         });
     }
 
-    /**
-     * Reverse the animation
-     */
     public close() {
         gsap.to(this.material.uniforms.uProgress, {
             value: 0.0,
@@ -137,7 +151,7 @@ export class GenieTransition {
     }
 
     private animate = () => {
-        requestAnimationFrame(this.animate);
+        this.animationFrameId = requestAnimationFrame(this.animate);
         this.renderer.render(this.scene, this.camera);
     };
 }
