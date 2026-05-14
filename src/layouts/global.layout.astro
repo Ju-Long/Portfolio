@@ -88,7 +88,7 @@ const link = Astro.request.url;
 
 		<div id="transition-screen" class="fixed top-0 left-0 w-screen h-screen z-50 hidden" transition:persist></div>
 
-		<main class="w-screen">
+		<main class="w-screen" transition:animate="slide">
 			<slot/>
 		</main>
 

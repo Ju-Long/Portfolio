@@ -226,14 +226,15 @@
         const memory = app_memory.get();
         app_memory.set([id, ...memory.filter((m) => m !== id)]);
 
-        const target_page = selected_app.get() == page ? undefined : page;
+        // TODO: improve transition animation
+        // const target_page = selected_app.get() == page ? undefined : page;
 
         console.log(selected_app.get(), page)
         if (selected_app.get() === page) {
-            await playTransitionAnimation("");
+            // await playTransitionAnimation("");
             selected_app.set(undefined);
         } else {
-            await playTransitionAnimation(target_page ?? "");
+            // await playTransitionAnimation(target_page ?? "");
             selected_app.set(page);
         }
     };
