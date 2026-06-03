@@ -1,4 +1,5 @@
 import { generateSvg } from "@/utils/smrt/generate-svg";
+import { Resvg } from "@resvg/resvg-js";
 
 export async function GET({ params, request }) {
     if (params.page !== "travelsg") {
@@ -12,10 +13,15 @@ export async function GET({ params, request }) {
     const svg = await generateSvg(station, {
         border: Number.isNaN(border) ? undefined : border,
     });
-    return new Response(svg, {
+
+    const resvg = new Resvg(svg);
+    const pngData = resvg.render();
+    const pngBuffer = pngData.asPng();
+
+    return new Response(pngBuffer as any, {
         headers: {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": `public, s-maxage=${60 * 60 * 24}, max-age=${60 * 60 * 24}`,
+            "Content-Type": "image/png",
+            "Cache-Control": `public, s-maxage=${60 * 60 * 24}, max-age=${60 * 60 * 24}`,
         },
     });
 }

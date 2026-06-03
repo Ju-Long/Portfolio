@@ -7,10 +7,16 @@ import Header from "@views/components/Header.astro";
 import AppSectionList from "@views/AppSectionList.astro";
 
 const { page } = Astro.params;
-if (!page) return Astro.redirect("/404");
+if (!page) {
+    console.log("page not stated");
+    return Astro.redirect("/404");
+}
 
 const app = await getAppFromPage(page);
-if (!app) return Astro.redirect("/404");
+if (!app) {
+    console.log("app not found for page: ", page);
+    return Astro.redirect("/404");
+}
 
 const tools = await fetchTools();
 let sections = await fetchSections(app.id);

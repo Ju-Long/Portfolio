@@ -1,4 +1,5 @@
-import { LRUCache } from "lru-cache";
+import type { LRUCache } from "lru-cache";
+const CacheClass = require("lru-cache") as unknown as typeof LRUCache;
 
 // Source: LTA Identity Font Typeface.zip in https://github.com/jglim/IdentityFont/issues/3
 // LTA Identity.ttf file
@@ -22,7 +23,7 @@ class LTAFontManager {
 }
 export const ltaFontManager = new LTAFontManager();
 
-export const svgCache = new LRUCache<string, string>({
+export const svgCache = new CacheClass<string, string>({
   max: 1000,
   maxSize: 50_000_000, // 50 MB
   sizeCalculation: (value: string) => value.length,
