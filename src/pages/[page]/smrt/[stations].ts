@@ -1,6 +1,10 @@
 import { generateSvg } from "@/utils/smrt/generate-svg";
 
 export async function GET({ params, request }) {
+    if (params.page !== "travelsg") {
+        return new Response(null, { status: 404, statusText: "Not found" });
+    }
+
     const url = new URL(request.url);
     const station = params.stations;
     const border = Number.parseInt(url.searchParams.get("border") || "");
